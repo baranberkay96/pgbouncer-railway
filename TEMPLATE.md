@@ -70,7 +70,7 @@ Estimated cost: idle ≈ $1.5/month (0.14 GB RAM + ~0.3 GB volume); typical ≈ 
 - [x] Admin console `SHOW POOLS` / `SHOW VERSION` as `postgres` on database `pgbouncer`.
 - [x] `PGBOUNCER_POOL_MODE=bogus`, `PGBOUNCER_DEFAULT_POOL_SIZE=abc` (STANDARD 8.29): deploy SUCCESS, warnings, defaults used.
 - [x] `PGBOUNCER_CLIENT_TLS=require`: `sslmode=disable` refused ("SSL required"), `sslmode=require` works.
-- [ ] Post-publish deploy by the real template id (`ship.py publish`).
+- [x] Post-publish deploy by the real template id: PASS (2026-11-24).
 
 ## Open questions
 
