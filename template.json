@@ -1,0 +1,201 @@
+{
+  "name": "PgBouncer 1.26 with PostgreSQL 18",
+  "description": "Postgres 18 behind a PgBouncer connection pool, private and ready to use.",
+  "category": "Storage",
+  "tags": [
+    "pgbouncer",
+    "postgresql",
+    "postgres",
+    "connection-pooling",
+    "database",
+    "pooler"
+  ],
+  "image": "https://cdn.jsdelivr.net/gh/pgbouncer/pgbouncer.github.io/images/pgbouncer-logo.svg",
+  "upstream": {
+    "pgbouncer": "edoburu/pgbouncer:v1.26.1-p0@sha256:488422e38cff912895d0d65d8963fcd306e6ac589a724398b6eb8e294e94d624 (PgBouncer 1.26.1 on Alpine 3.24) + python3/openssl from Alpine",
+    "postgres": "ghcr.io/railwayapp-templates/postgres-ssl:18.7@sha256:0abac5c0e29ac4fb1633aa644b4f3beaef29a05b4dc05f93190b5a7fbb0e7089 (= :18 on 2026-11-24)",
+    "checked": "2026-11-24"
+  },
+  "services": {
+    "PgBouncer": {
+      "icon": "https://cdn.jsdelivr.net/gh/pgbouncer/pgbouncer.github.io/images/pgbouncer-logo.svg",
+      "source": {
+        "repo": "baranberkay96/pgbouncer-railway",
+        "rootDirectory": "/services/pgbouncer"
+      },
+      "healthcheckPath": "/healthz",
+      "healthcheckTimeout": 300,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "publicDomain": false,
+      "tcpProxy": null,
+      "variables": {
+        "PORT": {
+          "defaultValue": "8080",
+          "description": "Private healthcheck port (GET /healthz). Not the database port.",
+          "required": false
+        },
+        "PGBOUNCER_PORT": {
+          "defaultValue": "6432",
+          "description": "Port clients connect to (Postgres protocol).",
+          "required": false
+        },
+        "DATABASE_URL": {
+          "defaultValue": "postgresql://${{Postgres.PGUSER}}:${{Postgres.PGPASSWORD}}@${{RAILWAY_PRIVATE_DOMAIN}}:6432/${{Postgres.PGDATABASE}}",
+          "description": "Pooled connection URL for your apps: reference ${{PgBouncer.DATABASE_URL}}.",
+          "required": false
+        },
+        "POSTGRES_HOST": {
+          "defaultValue": "${{Postgres.RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "Postgres host PgBouncer pools (private network). Point it at another Railway Postgres to pool that one.",
+          "required": false
+        },
+        "POSTGRES_PORT": {
+          "defaultValue": "${{Postgres.PGPORT}}",
+          "description": "Postgres port.",
+          "required": false
+        },
+        "AUTH_USER": {
+          "defaultValue": "${{Postgres.PGUSER}}",
+          "description": "Postgres superuser PgBouncer uses to look up client passwords (auth_query) and for the admin console.",
+          "required": false
+        },
+        "AUTH_PASSWORD": {
+          "defaultValue": "${{Postgres.PGPASSWORD}}",
+          "description": "Password of AUTH_USER.",
+          "required": false
+        },
+        "PGBOUNCER_POOL_MODE": {
+          "defaultValue": "transaction",
+          "description": "transaction (most apps, prepared statements supported), session (apps that need session state, e.g. LISTEN/NOTIFY, advisory locks) or statement.",
+          "required": false
+        },
+        "PGBOUNCER_DEFAULT_POOL_SIZE": {
+          "defaultValue": "20",
+          "description": "Server connections per database/user pair.",
+          "required": false
+        },
+        "PGBOUNCER_MIN_POOL_SIZE": {
+          "defaultValue": "0",
+          "description": "Server connections kept open even when idle.",
+          "required": false
+        },
+        "PGBOUNCER_RESERVE_POOL_SIZE": {
+          "defaultValue": "5",
+          "description": "Extra connections allowed when clients wait longer than 3 s.",
+          "required": false
+        },
+        "PGBOUNCER_MAX_DB_CONNECTIONS": {
+          "defaultValue": "80",
+          "description": "Upper limit of server connections per database (keep below Postgres max_connections, 100 by default). 0 = no limit.",
+          "required": false
+        },
+        "PGBOUNCER_MAX_CLIENT_CONN": {
+          "defaultValue": "1000",
+          "description": "Client connections PgBouncer accepts in total.",
+          "required": false
+        },
+        "PGBOUNCER_MAX_PREPARED_STATEMENTS": {
+          "defaultValue": "200",
+          "description": "Prepared statements tracked per connection in transaction mode (0 = off).",
+          "required": false
+        },
+        "PGBOUNCER_SERVER_IDLE_TIMEOUT": {
+          "defaultValue": "600",
+          "description": "Seconds before an idle server connection is closed.",
+          "required": false
+        },
+        "PGBOUNCER_QUERY_WAIT_TIMEOUT": {
+          "defaultValue": "120",
+          "description": "Seconds a query may wait for a free server connection before the client gets an error.",
+          "required": false
+        },
+        "PGBOUNCER_CLIENT_TLS": {
+          "defaultValue": "allow",
+          "description": "TLS for clients: allow (TLS if the client asks, self-signed certificate), require (TLS only, use with a TCP proxy) or disable.",
+          "required": false
+        },
+        "PGBOUNCER_SERVER_TLS": {
+          "defaultValue": "disable",
+          "description": "TLS from PgBouncer to Postgres (disable on Railway's private network; prefer/require for external hosts).",
+          "required": false
+        }
+      }
+    },
+    "Postgres": {
+      "icon": "https://devicons.railway.app/i/postgresql.svg",
+      "source": {
+        "image": "ghcr.io/railwayapp-templates/postgres-ssl:18.7@sha256:0abac5c0e29ac4fb1633aa644b4f3beaef29a05b4dc05f93190b5a7fbb0e7089"
+      },
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "publicDomain": false,
+      "tcpProxy": null,
+      "volume": {
+        "mountPath": "/var/lib/postgresql/data"
+      },
+      "variables": {
+        "PGDATA": {
+          "defaultValue": "/var/lib/postgresql/data/pgdata",
+          "description": "Location where the database will be initialized.",
+          "required": false
+        },
+        "PGHOST": {
+          "defaultValue": "${{RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "Railway private domain name.",
+          "required": false
+        },
+        "PGPORT": {
+          "defaultValue": "5432",
+          "description": "Port to connect to Postgres.",
+          "required": false
+        },
+        "PGUSER": {
+          "defaultValue": "${{ POSTGRES_USER }}",
+          "description": "User for the Railway Data panel.",
+          "required": false
+        },
+        "PGDATABASE": {
+          "defaultValue": "${{POSTGRES_DB}}",
+          "description": "Database for the Railway Data panel.",
+          "required": false
+        },
+        "PGPASSWORD": {
+          "defaultValue": "${{POSTGRES_PASSWORD}}",
+          "description": "Password for the Railway Data panel.",
+          "required": false
+        },
+        "POSTGRES_DB": {
+          "defaultValue": "railway",
+          "description": "Default database created when the image first starts.",
+          "required": false
+        },
+        "DATABASE_URL": {
+          "defaultValue": "postgresql://${{PGUSER}}:${{POSTGRES_PASSWORD}}@${{RAILWAY_PRIVATE_DOMAIN}}:5432/${{PGDATABASE}}",
+          "description": "Private connection URL for other services in this project.",
+          "required": false
+        },
+        "POSTGRES_USER": {
+          "defaultValue": "postgres",
+          "description": "Superuser created when the image first starts.",
+          "required": false
+        },
+        "SSL_CERT_DAYS": {
+          "defaultValue": "820",
+          "description": "SSL certificate expiry in days.",
+          "required": false
+        },
+        "POSTGRES_PASSWORD": {
+          "defaultValue": "${{ secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\") }}",
+          "description": "Superuser password (generated).",
+          "required": false
+        },
+        "RAILWAY_DEPLOYMENT_DRAINING_SECONDS": {
+          "defaultValue": "60",
+          "description": "Allow Postgres to shut down cleanly.",
+          "required": false
+        }
+      }
+    }
+  }
+}
