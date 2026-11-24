@@ -52,11 +52,25 @@ Railway base service (`_railway-base/postgres.json` values), volume `/var/lib/po
 
 ## Resource estimate
 
-RESOURCE_PLACEHOLDER
+Measured on the test deploy (2026-11-24, idle after 40 parallel clients): PgBouncer 22 MiB (PgBouncer + Python health server), Postgres ~115 MiB, CPU < 0.01 vCPU.
+
+| Service | Idle RAM | Typical RAM | CPU |
+|---|---|---|---|
+| PgBouncer | 22 MB | 30-80 MB (thousands of clients) | < 0.01 idle, ~0.1-0.5 under heavy load (single-threaded) |
+| Postgres | 115 MB | 200 MB-1 GB+ (20-80 pooled server connections) | 0.01-1 |
+
+Estimated cost: idle ≈ $1.5/month (0.14 GB RAM + ~0.3 GB volume); typical ≈ $5-15/month (mostly Postgres). Minimum plan: **Trial** (both far under 1 GB).
 
 ## Verification checklist
 
-CHECKLIST_PLACEHOLDER
+- [x] Both services SUCCESS; Railway healthcheck `/healthz` on 8080 passed (no public domain).
+- [x] Test TCP proxy to 6432 (test only, the template has none): `psql sslmode=require` as `postgres` → PostgreSQL 18.7 through PgBouncer 1.26.1, TLS with the generated certificate.
+- [x] Created a new role `handson` in Postgres; it logged in through PgBouncer with its own password (auth_query + SCRAM pass-through) and inserted a row; wrong password → `SASL authentication failed`.
+- [x] 40 parallel clients served by 20 server connections (`SHOW POOLS`: `sv_idle 20`, transaction mode); `pg_stat_activity` 21 client backends.
+- [x] Admin console `SHOW POOLS` / `SHOW VERSION` as `postgres` on database `pgbouncer`.
+- [x] `PGBOUNCER_POOL_MODE=bogus`, `PGBOUNCER_DEFAULT_POOL_SIZE=abc` (STANDARD 8.29): deploy SUCCESS, warnings, defaults used.
+- [x] `PGBOUNCER_CLIENT_TLS=require`: `sslmode=disable` refused ("SSL required"), `sslmode=require` works.
+- [ ] Post-publish deploy by the real template id (`ship.py publish`).
 
 ## Open questions
 
