@@ -1,5 +1,7 @@
 # Deploy and Host PgBouncer with Railway
 
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/pgbouncer-126-with-postgresql-18?referralCode=20H68q)
+
 PgBouncer is the lightweight, battle-tested connection pooler for PostgreSQL. This template deploys PgBouncer 1.26 in front of a PostgreSQL 18 database on Railway's private network, so many app instances, workers or serverless functions can share a small number of real database connections. Point your apps at one pooled URL and you are done.
 
 ## About Hosting PgBouncer
